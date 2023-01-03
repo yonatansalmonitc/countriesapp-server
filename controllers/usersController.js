@@ -26,11 +26,16 @@ const login = async (req, res) => {
       if (err) {
         res.status(500).send(err);
       } else if (!result) {
-        res.status(400).send("Password don't match");
+        res.status(400).send('Incorrect Password');
       } else {
         const token = jwt.sign({ id: user.id }, process.env.TOKEN_SECRET, { expiresIn: '1h' });
-        res.cookie('token', token, { maxAge: 86000000, httpOnly: true });
-        res.send({ok: true, userId: user.id });
+        res.cookie('token', token, {
+          maxAge: 86000000,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production' ? true : false,
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        });
+        res.send({ ok: true, userId: user.id });
       }
     });
   } catch (err) {
